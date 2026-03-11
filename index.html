@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NiaHealth Quiz</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@400;600&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { min-height: 100vh; background: #0b0e1a; display: flex; align-items: center; justify-content: center; padding: 24px; font-family: 'Source Sans 3', Georgia, serif; }
+  .card { background: #111827; border: 1px solid #1e2d40; border-radius: 16px; padding: 40px; max-width: 680px; width: 100%; }
+  .meta { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .meta span { color: #4b5563; font-size: 13px; }
+  .meta .pts { color: #3b82f6; font-weight: 600; }
+  .progress-bar { height: 4px; background: #1e2d40; border-radius: 99px; margin-bottom: 32px; }
+  .progress-fill { height: 4px; background: linear-gradient(90deg, #3b82f6, #06b6d4); border-radius: 99px; transition: width 0.4s ease; }
+  h2 { font-family: 'Playfair Display', serif; color: #f1f5f9; font-size: 20px; line-height: 1.5; margin-bottom: 28px; font-weight: 700; }
+  .opt { cursor: pointer; border: 1.5px solid #1e2d40; border-radius: 10px; padding: 14px 20px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; background: #0f1623; transition: all 0.18s; }
+  .opt:hover { border-color: #3b82f6; background: #131f30; }
+  .opt.selected { border-color: #3b82f6; background: #131f30; }
+  .opt.correct { border-color: #10b981; background: #0c2b20; }
+  .opt.wrong { border-color: #ef4444; background: #2b0c0c; }
+  .badge { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; background: #1e2d40; color: #6b7280; }
+  .opt.selected .badge { background: #3b82f6; color: #fff; }
+  .opt.correct .badge { background: #10b981; color: #fff; }
+  .opt.wrong .badge { background: #ef4444; color: #fff; }
+  .opt-text { color: #d1d5db; font-size: 15px; }
+  .feedback { border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; font-size: 14px; }
+  .feedback.good { background: #0c2b20; border: 1px solid #10b981; color: #34d399; }
+  .feedback.bad { background: #2b0c0c; border: 1px solid #ef4444; color: #f87171; }
+  .actions { display: flex; justify-content: flex-end; }
+  .btn { background: #3b82f6; color: #fff; border: none; border-radius: 10px; padding: 14px 32px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .btn:hover { background: #2563eb; }
+  .btn:disabled { background: #1e2d40; color: #4b5563; cursor: not-allowed; }
+  /* Results */
+  h1 { font-family: 'Playfair Display', serif; color: #f1f5f9; font-size: 32px; font-weight: 900; margin-bottom: 8px; }
+  .subtitle { color: #6b7280; margin-bottom: 28px; }
+  .score-box { background: #0f1623; border: 1px solid #1e2d40; border-radius: 12px; padding: 28px; text-align: center; margin-bottom: 32px; }
+  .score-num { font-family: 'Playfair Display', serif; font-size: 64px; font-weight: 900; line-height: 1; }
+  .score-total { font-size: 28px; color: #4b5563; }
+  .score-msg { color: #9ca3af; margin-top: 8px; font-size: 15px; }
+  .review-title { color: #f1f5f9; font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 16px; }
+  .review-item { border: 1px solid #1e2d40; border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+  .review-q { color: #d1d5db; font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+  .tag { border-radius: 6px; padding: 2px 8px; font-size: 12px; display: inline-block; margin: 2px; }
+  .tag-wrong { background: #2b0c0c; color: #f87171; }
+  .tag-right { background: #0c2b20; color: #34d399; }
+  #quiz-screen, #results-screen { display: none; }
+  #quiz-screen.active, #results-screen.active { display: block; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div id="quiz-screen" class="active">
+    <div class="meta">
+      <span id="q-counter">Question 1 of 20</span>
+      <span class="pts" id="pts-display">0 pts</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <h2 id="question-text"></h2>
+    <div id="options-container"></div>
+    <div id="feedback" style="display:none"></div>
+    <div class="actions">
+      <button class="btn" id="action-btn" onclick="handleAction()">Confirm Answer</button>
+    </div>
+  </div>
+
+  <div id="results-screen">
+    <h1>Quiz Complete</h1>
+    <p class="subtitle">NiaHealth Biomarkers & Plans</p>
+    <div class="score-box">
+      <div class="score-num" id="score-num"></div>
+      <div class="score-msg" id="score-msg"></div>
+    </div>
+    <div id="review-container"></div>
+    <div style="text-align:center; margin-top:28px;">
+      <button class="btn" onclick="restartQuiz()">Retake Quiz</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  { q: "What is the price of the NiaHealth Core plan (CAD)?", options: ["$299","$499","$599","$799"], answer: 2 },
+  { q: "How many biomarkers does the Core plan include?", options: ["40","60","80","120+"], answer: 1 },
+  { q: "Which biomarker added in Core enables the HOMA-IR calculation?", options: ["hs-CRP","Fasting Insulin","ApoB","Urine ACR"], answer: 1 },
+  { q: "What does hs-CRP measure?", options: ["Blood sugar over 3 months","Low-grade systemic inflammation","Kidney filtration rate","Iron storage levels"], answer: 1 },
+  { q: "How much does the Omega Panel add-on cost?", options: ["$100","$150","$200","$390"], answer: 2 },
+  { q: "Which provinces offer in-clinic blood draws at no extra fee?", options: ["AB, BC, ON","BC, MB, ON","ON, QC, MB","BC, SK, ON"], answer: 1 },
+  { q: "What fee applies for at-home mobile phlebotomy outside BC, MB, and ON?", options: ["$50","$75","$100","$150"], answer: 2 },
+  { q: "What does the TyG Index combine to estimate insulin resistance?", options: ["TSH and glucose","Triglycerides and fasting glucose","Insulin and A1c","LDL and fasting insulin"], answer: 1 },
+  { q: "What does the Omega-3 Index measure?", options: ["Total omega-3 in diet","EPA and DHA in red blood cell membranes","ALA conversion rate","Omega-3 to omega-6 ratio in plasma"], answer: 1 },
+  { q: "ApoB predicts cardiovascular risk by measuring what?", options: ["Total cholesterol in blood","Number of artery-clogging LDL/VLDL particles","HDL particle size","Triglyceride concentration"], answer: 1 },
+  { q: "Which gut bacteria is known for producing butyrate?", options: ["Akkermansia","Bifidobacterium","Faecalibacterium","Lactobacillaceae"], answer: 2 },
+  { q: "What does a DEXA body scan measure?", options: ["VO2 Max and heart rate zones","Body composition, bone density, and visceral adipose tissue","Blood glucose variability","Gut microbiome diversity"], answer: 1 },
+  { q: "What is the Ultra plan's annual price?", options: ["$999","$1,499","$1,799","$1,999"], answer: 3 },
+  { q: "The EPA/AA ratio compares which two fatty acids?", options: ["DHA and linoleic acid","ALA and arachidonic acid","EPA and arachidonic acid","DHA and palmitic acid"], answer: 2 },
+  { q: "Which add-on is NOT included in the Ultra plan?", options: ["Advanced Thyroid Panel","Gut Microbiome Test","14-day CGM","Omega Panel"], answer: 3 },
+  { q: "What does ALMI measure?", options: ["Abdominal fat to lean muscle ratio","Lean muscle mass in arms and legs relative to height","Total appendicular body fat percentage","Bone mineral density index"], answer: 1 },
+  { q: "What does a higher Shannon Diversity Index indicate?", options: ["More antibiotic-resistant bacteria","Higher SCFA production","A healthier, more resilient gut ecosystem","More methane-producing archaea"], answer: 2 },
+  { q: "Cystatin C is preferred over creatinine because it is less affected by what?", options: ["Age and sex","Hydration and diet","Muscle mass and diet","Medications and hormones"], answer: 2 },
+  { q: "Which genetic test assesses Alzheimer's risk and is NOT in Ultra?", options: ["Pharmacogenomics","APOE Genetic Test","CYP2D6 panel","SLCO1B1 analysis"], answer: 1 },
+  { q: "VO2 Max is the gold standard measure of what?", options: ["Metabolic flexibility","Cardiorespiratory fitness and longevity","Insulin resistance","Cardiovascular inflammation"], answer: 1 },
+];
+
+const labels = ["A","B","C","D"];
+let current = 0, score = 0, selected = null, confirmed = false, results = [];
+let shuffled = [];
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  shuffled = shuffle(questions);
+  current = 0; score = 0; selected = null; confirmed = false; results = [];
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[current];
+  document.getElementById('q-counter').textContent = `Question ${current+1} of ${shuffled.length}`;
+  document.getElementById('pts-display').textContent = `${score} pts`;
+  document.getElementById('progress-fill').style.width = `${(current/shuffled.length)*100}%`;
+  document.getElementById('question-text').textContent = q.q;
+  document.getElementById('feedback').style.display = 'none';
+  document.getElementById('action-btn').textContent = 'Confirm Answer';
+  document.getElementById('action-btn').disabled = true;
+
+  const container = document.getElementById('options-container');
+  container.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const div = document.createElement('div');
+    div.className = 'opt';
+    div.innerHTML = `<div class="badge">${labels[i]}</div><span class="opt-text">${opt}</span>`;
+    div.onclick = () => selectOption(i);
+    div.id = `opt-${i}`;
+    container.appendChild(div);
+  });
+}
+
+function selectOption(i) {
+  if (confirmed) return;
+  selected = i;
+  document.querySelectorAll('.opt').forEach((el, idx) => {
+    el.classList.toggle('selected', idx === i);
+    el.querySelector('.badge').textContent = labels[idx];
+  });
+  document.getElementById('action-btn').disabled = false;
+}
+
+function handleAction() {
+  if (!confirmed) {
+    confirmed = true;
+    const q = shuffled[current];
+    const correct = selected === q.answer;
+    if (correct) score++;
+    results.push({ ...q, chosen: selected, correct });
+
+    q.options.forEach((_, i) => {
+      const el = document.getElementById(`opt-${i}`);
+      const badge = el.querySelector('.badge');
+      if (i === q.answer) { el.classList.add('correct'); badge.textContent = '✓'; }
+      else if (i === selected) { el.classList.add('wrong'); badge.textContent = '✗'; }
+    });
+
+    const fb = document.getElementById('feedback');
+    fb.style.display = 'block';
+    if (correct) {
+      fb.className = 'feedback good';
+      fb.textContent = '✓ Correct!';
+    } else {
+      fb.className = 'feedback bad';
+      fb.textContent = `✗ Correct answer: ${q.options[q.answer]}`;
+    }
+    document.getElementById('pts-display').textContent = `${score} pts`;
+    document.getElementById('action-btn').textContent = current+1 >= shuffled.length ? 'See Results' : 'Next →';
+  } else {
+    if (current+1 >= shuffled.length) { showResults(); }
+    else {
+      current++; selected = null; confirmed = false;
+      renderQuestion();
+    }
+  }
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').classList.remove('active');
+  document.getElementById('results-screen').classList.add('active');
+  const total = shuffled.length;
+  const pct = Math.round((score / total) * 100);
+  const numEl = document.getElementById('score-num');
+  numEl.innerHTML = `${score}<span class="score-total">/${total}</span>`;
+  numEl.style.color = pct >= 80 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#ef4444';
+  document.getElementById('score-msg').textContent =
+    pct >= 80 ? '🏆 Excellent — you know your biomarkers!' :
+    pct >= 60 ? '👍 Good effort — review the misses below.' :
+    '📖 Keep studying — revisit the guide!';
+
+  const rc = document.getElementById('review-container');
+  rc.innerHTML = `<div class="review-title">Answer Review</div>` +
+    results.map((r, i) => {
+      if (r.correct) {
+        return `<div class="review-item"><div class="review-q">${i+1}. ${r.q}</div><span class="tag tag-right">✓ ${r.options[r.answer]}</span></div>`;
+      }
+      return `<div class="review-item"><div class="review-q">${i+1}. ${r.q}</div><span class="tag tag-wrong">✗ Your answer: ${r.options[r.chosen]}</span> <span class="tag tag-right">✓ Correct: ${r.options[r.answer]}</span></div>`;
+    }).join('');
+}
+
+function restartQuiz() {
+  document.getElementById('quiz-screen').classList.add('active');
+  document.getElementById('results-screen').classList.remove('active');
+  startQuiz();
+}
+
+startQuiz();
+</script>
+</body>
+</html>
