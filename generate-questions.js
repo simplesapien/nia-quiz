@@ -7,13 +7,12 @@ const fs = require('fs');
 
 const biomarkers = JSON.parse(fs.readFileSync('biomarkers.json', 'utf8'));
 
-function toShortAnswer(desc, maxLen = 85) {
-  // Take first sentence or first clause, trim to maxLen
+function toShortAnswer(desc, maxLen = 200) {
+  // Use first full sentence when possible, otherwise trim to maxLen
   let s = desc.replace(/\s+/g, ' ').trim();
   const period = s.indexOf('.');
-  if (period > 0 && period < maxLen) s = s.slice(0, period + 1);
-  else s = s.slice(0, maxLen);
-  if (s.length >= maxLen - 3 && !s.endsWith('.')) s = s.replace(/\s+\S*$/, '') + '…';
+  if (period > 0 && period <= maxLen) s = s.slice(0, period + 1);
+  else if (s.length > maxLen) s = s.slice(0, maxLen).replace(/\s+\S*$/, '').trim() + '.';
   return s.trim();
 }
 

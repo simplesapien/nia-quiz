@@ -15,7 +15,7 @@
   .progress-bar { height: 4px; background: #1e2d40; border-radius: 99px; margin-bottom: 32px; }
   .progress-fill { height: 4px; background: linear-gradient(90deg, #3b82f6, #06b6d4); border-radius: 99px; transition: width 0.4s ease; }
   h2 { font-family: 'Playfair Display', serif; color: #f1f5f9; font-size: 20px; line-height: 1.5; margin-bottom: 28px; font-weight: 700; }
-  .opt { cursor: pointer; border: 1.5px solid #1e2d40; border-radius: 10px; padding: 14px 20px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; background: #0f1623; transition: all 0.18s; }
+  .opt { cursor: pointer; border: 1.5px solid #1e2d40; border-radius: 10px; padding: 14px 20px; margin-bottom: 10px; display: flex; align-items: flex-start; gap: 14px; background: #0f1623; transition: all 0.18s; }
   .opt:hover { border-color: #3b82f6; background: #131f30; }
   .opt.selected { border-color: #3b82f6; background: #131f30; }
   .opt.correct { border-color: #10b981; background: #0c2b20; }
@@ -24,7 +24,7 @@
   .opt.selected .badge { background: #3b82f6; color: #fff; }
   .opt.correct .badge { background: #10b981; color: #fff; }
   .opt.wrong .badge { background: #ef4444; color: #fff; }
-  .opt-text { color: #d1d5db; font-size: 15px; }
+  .opt-text { color: #d1d5db; font-size: 15px; flex: 1; min-width: 0; line-height: 1.5; }
   .feedback { border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; font-size: 14px; }
   .feedback.good { background: #0c2b20; border: 1px solid #10b981; color: #34d399; }
   .feedback.bad { background: #2b0c0c; border: 1px solid #ef4444; color: #f87171; }
