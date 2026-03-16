@@ -264,7 +264,9 @@ function getDateString() {
 function entryDateStr(e) {
   if (e.dateStr) return e.dateStr;
   if (e.date) {
-    const d = new Date(e.date);
+    const ts = e.date;
+    const ms = typeof ts?.toDate === 'function' ? ts.toDate().getTime() : (ts?.seconds ? ts.seconds * 1000 : ts);
+    const d = new Date(ms);
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
   return '';
@@ -281,11 +283,12 @@ async function loadAndRenderLeaderboard() {
     empty.textContent = 'Loading...';
     empty.style.display = 'block';
     try {
-      const snap = await db.collection('leaderboard').where('dateStr', '==', today).orderBy('score', 'desc').limit(20).get();
-      const list = snap.docs.map(d => d.data());
+      const snap = await db.collection('leaderboard').limit(100).get();
+      const list = snap.docs.map(d => d.data()).filter(e => entryDateStr(e) === today).sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 20);
       empty.style.display = 'none';
       renderLeaderboard(list);
     } catch (e) {
+      console.error('Leaderboard error:', e);
       empty.textContent = 'Could not load leaderboard. Check Firebase config and indexes.';
       empty.style.display = 'block';
     }
