@@ -79,12 +79,18 @@
   .submit-score .submit-msg { color: #10b981; font-size: 14px; }
   .submit-score .retake-wrap { margin-top: 12px; }
   /* Comments */
+  #tab-comments { display: flex; flex-direction: column; }
+  .comments-header { color: #6b7280; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
   .comments-prompt { color: #f1f5f9; font-size: 14px; margin-bottom: 16px; }
-  .feedback-form { margin-top: 16px; margin-bottom: 24px; }
+  .feedback-form { margin-top: 0; margin-bottom: 16px; }
   .feedback-input, .feedback-textarea { width: 100%; background: #0f1623; border: 1px solid #1e2d40; border-radius: 8px; padding: 12px 16px; font-size: 15px; color: #d1d5db; font-family: inherit; }
   .feedback-input::placeholder, .feedback-textarea::placeholder { color: #6b7280; }
   .feedback-textarea { resize: vertical; min-height: 80px; }
-  .comments-list { max-height: 400px; overflow-y: auto; }
+  .comments-list { height: 320px; min-height: 320px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #374151 transparent; }
+  .comments-list::-webkit-scrollbar { width: 6px; }
+  .comments-list::-webkit-scrollbar-track { background: transparent; }
+  .comments-list::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+  .comments-list::-webkit-scrollbar-thumb:hover { background: #4b5563; }
   .load-more-comments { margin-top: 12px; text-align: center; }
   .load-more-comments .btn { padding: 10px 24px; font-size: 14px; }
   .comment-item { border: 1px solid #1e2d40; border-radius: 10px; padding: 14px 18px; margin-bottom: 12px; }
@@ -154,7 +160,7 @@
   </div>
 
   <div id="tab-comments" style="display:none;">
-    <h1 style="margin-bottom:8px;">Comments</h1>
+    <div class="comments-header">Comments</div>
     <p class="comments-prompt" id="comments-prompt">See something wrong? Leave a comment below — anonymously or with your name. Comments are shared and persist.</p>
     <form id="comment-form" class="feedback-form">
       <input type="text" id="comment-name" placeholder="Your name (optional — leave blank for anonymous)" class="feedback-input" style="margin-bottom:10px;" maxlength="50" />
@@ -197,7 +203,8 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('[id^="tab-"]').forEach(p => p.style.display = 'none');
     btn.classList.add('active');
-    document.getElementById('tab-' + tab).style.display = 'block';
+    const tabEl = document.getElementById('tab-' + tab);
+    tabEl.style.display = tab === 'comments' ? 'flex' : 'block';
     if (tab === 'leaderboard') loadAndRenderLeaderboard();
     if (tab === 'comments') loadAndRenderComments();
   });
