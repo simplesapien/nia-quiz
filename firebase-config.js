@@ -3,6 +3,8 @@
 //
 // Firestore setup: Enable Firestore in Firebase Console. Add these security rules (Rules tab):
 //   match /comments/{doc} { allow read, write: if true; }
+//   match /leaderboard/{doc} { allow read, write: if true; }
+// If you get an index error, click the link in the console to create the required index.
 //
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",

@@ -132,7 +132,7 @@
 
   <div id="tab-leaderboard" style="display:none;">
     <h1 style="margin-bottom:8px;">Today's Leaderboard</h1>
-    <p class="subtitle">Top scores — resets daily</p>
+    <p class="subtitle">Top scores — resets daily (shared)</p>
     <div id="leaderboard-list" class="leaderboard-list"></div>
     <div id="leaderboard-empty" class="leaderboard-empty" style="display:none;">No scores yet today. Complete the quiz and submit your score!</div>
   </div>
@@ -174,7 +174,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('[id^="tab-"]').forEach(p => p.style.display = 'none');
     btn.classList.add('active');
     document.getElementById('tab-' + tab).style.display = 'block';
-    if (tab === 'leaderboard') renderLeaderboard();
+    if (tab === 'leaderboard') loadAndRenderLeaderboard();
     if (tab === 'comments') loadAndRenderComments();
   });
 });
@@ -270,7 +270,32 @@ function entryDateStr(e) {
   return '';
 }
 
-function getLeaderboard() {
+async function loadAndRenderLeaderboard() {
+  const container = document.getElementById('leaderboard-list');
+  const empty = document.getElementById('leaderboard-empty');
+  const today = getDateString();
+
+  if (db) {
+    container.innerHTML = '';
+    empty.style.display = 'none';
+    empty.textContent = 'Loading...';
+    empty.style.display = 'block';
+    try {
+      const snap = await db.collection('leaderboard').where('dateStr', '==', today).orderBy('score', 'desc').limit(20).get();
+      const list = snap.docs.map(d => d.data());
+      empty.style.display = 'none';
+      renderLeaderboard(list);
+    } catch (e) {
+      empty.textContent = 'Could not load leaderboard. Check Firebase config and indexes.';
+      empty.style.display = 'block';
+    }
+  } else {
+    const list = getLeaderboardLocal();
+    renderLeaderboard(list);
+  }
+}
+
+function getLeaderboardLocal() {
   try {
     const raw = localStorage.getItem(LEADERBOARD_KEY);
     const all = raw ? JSON.parse(raw) : [];
@@ -279,26 +304,36 @@ function getLeaderboard() {
   } catch { return []; }
 }
 
-function saveToLeaderboard(entry) {
+async function saveToLeaderboard(entry) {
   const today = getDateString();
   const fullEntry = { ...entry, dateStr: today };
-  try {
-    const raw = localStorage.getItem(LEADERBOARD_KEY);
-    const all = raw ? JSON.parse(raw) : [];
-    const otherDays = all.filter(e => entryDateStr(e) !== today);
-    const todayEntries = all.filter(e => entryDateStr(e) === today);
-    todayEntries.push(fullEntry);
-    todayEntries.sort((a, b) => b.score - a.score);
-    const merged = [...todayEntries.slice(0, 50), ...otherDays].slice(0, 100);
-    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(merged));
-  } catch { localStorage.setItem(LEADERBOARD_KEY, JSON.stringify([fullEntry])); }
+
+  if (db) {
+    try {
+      await db.collection('leaderboard').add(fullEntry);
+    } catch (e) {
+      alert('Could not save to leaderboard. Check Firebase config.');
+      return;
+    }
+  } else {
+    try {
+      const raw = localStorage.getItem(LEADERBOARD_KEY);
+      const all = raw ? JSON.parse(raw) : [];
+      const otherDays = all.filter(e => entryDateStr(e) !== today);
+      const todayEntries = all.filter(e => entryDateStr(e) === today);
+      todayEntries.push(fullEntry);
+      todayEntries.sort((a, b) => b.score - a.score);
+      const merged = [...todayEntries.slice(0, 50), ...otherDays].slice(0, 100);
+      localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(merged));
+    } catch { localStorage.setItem(LEADERBOARD_KEY, JSON.stringify([fullEntry])); }
+  }
 }
 
-function renderLeaderboard() {
-  const list = getLeaderboard();
+function renderLeaderboard(list) {
   const container = document.getElementById('leaderboard-list');
   const empty = document.getElementById('leaderboard-empty');
-  if (list.length === 0) {
+  empty.textContent = 'No scores yet today. Complete the quiz and submit your score!';
+  if (!list || list.length === 0) {
     container.innerHTML = '';
     empty.style.display = 'block';
     return;
@@ -315,16 +350,16 @@ function escapeHtml(s) {
   return div.innerHTML;
 }
 
-function submitToLeaderboard() {
+async function submitToLeaderboard() {
   const input = document.getElementById('leaderboard-name');
   const name = ((input.value || '').trim() || 'Anonymous').slice(0, 30);
-  saveToLeaderboard({ name, score, total: shuffled.length });
+  await saveToLeaderboard({ name, score, total: shuffled.length });
   input.value = '';
   input.disabled = true;
   const msg = document.getElementById('submit-msg');
   msg.textContent = '✓ Added to leaderboard!';
   msg.style.display = 'block';
-  renderLeaderboard();
+  await loadAndRenderLeaderboard();
   document.querySelector('[data-tab="leaderboard"]').click();
 }
 
