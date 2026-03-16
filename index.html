@@ -48,6 +48,10 @@
   .tag-right { background: #0c2b20; color: #34d399; }
   #quiz-screen, #results-screen { display: none; }
   #quiz-screen.active, #results-screen.active { display: block; }
+  /* Page header */
+  .page-header { margin-bottom: 24px; }
+  .page-title { font-family: 'Playfair Display', serif; color: #f1f5f9; font-size: 28px; font-weight: 900; margin-bottom: 4px; }
+  .page-subtitle { color: #6b7280; font-size: 14px; }
   /* Tabs */
   .tabs { display: flex; gap: 4px; margin-bottom: 20px; }
   .tab-btn { background: #0f1623; border: 1px solid #1e2d40; border-radius: 8px; padding: 8px 16px; font-size: 14px; color: #9ca3af; cursor: pointer; font-family: inherit; }
@@ -82,6 +86,10 @@
 </head>
 <body>
 <div class="card">
+  <div class="page-header">
+    <h1 class="page-title">Today's Quiz</h1>
+    <p class="page-subtitle">Same 20 questions for everyone • Leaderboard resets daily</p>
+  </div>
   <div class="tabs">
     <button class="tab-btn active" data-tab="quiz">Quiz</button>
     <button class="tab-btn" data-tab="leaderboard">Leaderboard</button>
@@ -123,15 +131,15 @@
   </div>
 
   <div id="tab-leaderboard" style="display:none;">
-    <h1 style="margin-bottom:8px;">Leaderboard</h1>
-    <p class="subtitle">Today's top scores — resets daily</p>
+    <h1 style="margin-bottom:8px;">Today's Leaderboard</h1>
+    <p class="subtitle">Top scores — resets daily</p>
     <div id="leaderboard-list" class="leaderboard-list"></div>
     <div id="leaderboard-empty" class="leaderboard-empty" style="display:none;">No scores yet today. Complete the quiz and submit your score!</div>
   </div>
 
   <div id="tab-comments" style="display:none;">
     <h1 style="margin-bottom:8px;">Comments</h1>
-    <p class="comments-prompt">See something wrong? Leave a comment below — anonymously or with your name. (Stored on this device)</p>
+    <p class="comments-prompt" id="comments-prompt">See something wrong? Leave a comment below — anonymously or with your name. Comments are shared and persist.</p>
     <form id="comment-form" class="feedback-form">
       <input type="text" id="comment-name" placeholder="Your name (optional — leave blank for anonymous)" class="feedback-input" style="margin-bottom:10px;" maxlength="50" />
       <textarea id="comment-text" placeholder="Your comment..." required class="feedback-textarea" rows="4"></textarea>
@@ -141,12 +149,23 @@
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 <script src="questions.js"></script>
 <script>
 const QUESTIONS_PER_QUIZ = 20;
 const LEADERBOARD_KEY = 'nia-quiz-leaderboard';
 const LEADERBOARD_MAX = 50;
 const COMMENTS_KEY = 'nia-quiz-comments';
+
+let db = null;
+if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey && firebaseConfig.apiKey !== 'YOUR_API_KEY') {
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+  } catch (e) { console.warn('Firebase init failed:', e); }
+}
 
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -156,49 +175,85 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.add('active');
     document.getElementById('tab-' + tab).style.display = 'block';
     if (tab === 'leaderboard') renderLeaderboard();
-    if (tab === 'comments') renderComments();
+    if (tab === 'comments') loadAndRenderComments();
   });
 });
 
-function getComments() {
+function formatCommentDate(ts) {
+  const d = new Date(typeof ts === 'object' && ts?.seconds ? ts.seconds * 1000 : ts);
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+async function loadAndRenderComments() {
+  const container = document.getElementById('comments-list');
+  if (db) {
+    container.innerHTML = '<div class="leaderboard-empty">Loading comments...</div>';
+    try {
+      const snap = await db.collection('comments').orderBy('date', 'desc').limit(100).get();
+      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderComments(list);
+    } catch (e) {
+      container.innerHTML = '<div class="leaderboard-empty">Could not load comments. Check Firebase config.</div>';
+    }
+  } else {
+    const list = getCommentsLocal();
+    renderComments(list);
+    const prompt = document.getElementById('comments-prompt');
+    if (prompt) prompt.textContent = 'See something wrong? Leave a comment below — anonymously or with your name. (Local only — add Firebase config for shared comments.)';
+  }
+}
+
+function getCommentsLocal() {
   try {
     const raw = localStorage.getItem(COMMENTS_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch { return []; }
 }
 
-function saveComment(comment) {
-  const list = getComments();
-  list.unshift(comment);
-  localStorage.setItem(COMMENTS_KEY, JSON.stringify(list.slice(0, 200)));
+async function saveComment(comment) {
+  const nameInput = document.getElementById('comment-name');
+  const textInput = document.getElementById('comment-text');
+  const name = (nameInput.value || '').trim() || 'Anonymous';
+  const text = (textInput.value || '').trim();
+  if (!text) return;
+  const data = { name, text, date: db ? firebase.firestore.Timestamp.now() : Date.now() };
+
+  if (db) {
+    try {
+      await db.collection('comments').add(data);
+      nameInput.value = '';
+      textInput.value = '';
+      loadAndRenderComments();
+    } catch (e) {
+      alert('Could not post comment. Check Firebase config.');
+    }
+  } else {
+    const list = getCommentsLocal();
+    list.unshift({ ...data, date: Date.now() });
+    localStorage.setItem(COMMENTS_KEY, JSON.stringify(list.slice(0, 200)));
+    nameInput.value = '';
+    textInput.value = '';
+    renderComments(list);
+  }
 }
 
-function renderComments() {
-  const list = getComments();
+function renderComments(list) {
   const container = document.getElementById('comments-list');
-  if (list.length === 0) {
+  if (!list || list.length === 0) {
     container.innerHTML = '<div class="leaderboard-empty">No comments yet. Be the first!</div>';
     return;
   }
   container.innerHTML = list.map(c => {
     const author = (c.name || '').trim() || 'Anonymous';
     const authorClass = author === 'Anonymous' ? 'comment-author anonymous' : 'comment-author';
-    const date = new Date(c.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-    return `<div class="comment-item"><div class="${authorClass}">${escapeHtml(author)}</div><div class="comment-body">${escapeHtml(c.text)}</div><div class="comment-date">${date}</div></div>`;
+    const dateStr = formatCommentDate(c.date);
+    return `<div class="comment-item"><div class="${authorClass}">${escapeHtml(author)}</div><div class="comment-body">${escapeHtml(c.text)}</div><div class="comment-date">${dateStr}</div></div>`;
   }).join('');
 }
 
 document.getElementById('comment-form').addEventListener('submit', (e) => {
   e.preventDefault();
-  const nameInput = document.getElementById('comment-name');
-  const textInput = document.getElementById('comment-text');
-  const text = (textInput.value || '').trim();
-  if (!text) return;
-  const comment = { name: (nameInput.value || '').trim(), text, date: Date.now() };
-  saveComment(comment);
-  nameInput.value = '';
-  textInput.value = '';
-  renderComments();
+  saveComment();
 });
 
 function getDateString() {
