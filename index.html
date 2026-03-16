@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="favicon.png">
 <title>NiaHealth Quiz</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@400;600&display=swap');
@@ -60,6 +61,9 @@
   .tab-btn:hover { color: #d1d5db; border-color: #3b82f6; }
   .tab-btn.active { background: #1e2d40; color: #3b82f6; border-color: #3b82f6; }
   /* Leaderboard */
+  .leaderboard-date-row { margin-bottom: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .leaderboard-date-row label { color: #9ca3af; font-size: 14px; }
+  .leaderboard-date-row select { background: #0f1623; border: 1px solid #1e2d40; border-radius: 8px; padding: 8px 12px; font-size: 14px; color: #d1d5db; font-family: inherit; cursor: pointer; }
   .leaderboard-list { max-height: 400px; overflow-y: auto; }
   .leaderboard-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #1e2d40; }
   .leaderboard-row:last-child { border-bottom: none; }
@@ -81,6 +85,8 @@
   .feedback-input::placeholder, .feedback-textarea::placeholder { color: #6b7280; }
   .feedback-textarea { resize: vertical; min-height: 80px; }
   .comments-list { max-height: 400px; overflow-y: auto; }
+  .load-more-comments { margin-top: 12px; text-align: center; }
+  .load-more-comments .btn { padding: 10px 24px; font-size: 14px; }
   .comment-item { border: 1px solid #1e2d40; border-radius: 10px; padding: 14px 18px; margin-bottom: 12px; }
   .comment-author { color: #3b82f6; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
   .comment-author.anonymous { color: #6b7280; font-style: italic; }
@@ -137,10 +143,14 @@
   </div>
 
   <div id="tab-leaderboard" style="display:none;">
-    <h1 style="margin-bottom:8px;">Today's Leaderboard</h1>
+    <h1 style="margin-bottom:8px;">Leaderboard</h1>
     <p class="subtitle">Top scores — resets daily (shared)</p>
+    <div class="leaderboard-date-row">
+      <label for="leaderboard-date">View:</label>
+      <select id="leaderboard-date" onchange="loadAndRenderLeaderboard()"></select>
+    </div>
     <div id="leaderboard-list" class="leaderboard-list"></div>
-    <div id="leaderboard-empty" class="leaderboard-empty" style="display:none;">No scores yet today. Complete the quiz and submit your score!</div>
+    <div id="leaderboard-empty" class="leaderboard-empty" style="display:none;">No scores yet. Complete the quiz and submit your score!</div>
   </div>
 
   <div id="tab-comments" style="display:none;">
@@ -152,6 +162,9 @@
       <button type="submit" class="btn" style="margin-top:12px;">Post Comment</button>
     </form>
     <div id="comments-list" class="comments-list"></div>
+    <div id="load-more-comments" class="load-more-comments" style="display:none;">
+      <button class="btn btn-secondary" onclick="loadMoreComments()">Load more comments</button>
+    </div>
   </div>
 </div>
 
@@ -165,6 +178,10 @@ const QUESTIONS_PER_QUIZ = 20;
 const LEADERBOARD_KEY = 'nia-quiz-leaderboard';
 const LEADERBOARD_MAX = 50;
 const COMMENTS_KEY = 'nia-quiz-comments';
+const COMMENTS_PAGE_SIZE = 20;
+let commentsLastDoc = null;
+let commentsHasMore = false;
+let allComments = [];
 
 let db = null;
 if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey && firebaseConfig.apiKey !== 'YOUR_API_KEY') {
@@ -191,23 +208,44 @@ function formatCommentDate(ts) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-async function loadAndRenderComments() {
+async function loadAndRenderComments(reset = true) {
   const container = document.getElementById('comments-list');
+  const loadMoreEl = document.getElementById('load-more-comments');
   if (db) {
-    container.innerHTML = '<div class="leaderboard-empty">Loading comments...</div>';
+    if (reset) {
+      container.innerHTML = '<div class="leaderboard-empty">Loading comments...</div>';
+      commentsLastDoc = null;
+      allComments = [];
+    }
+    loadMoreEl.style.display = 'none';
     try {
-      const snap = await db.collection('comments').orderBy('date', 'desc').limit(100).get();
+      let q = db.collection('comments').orderBy('date', 'desc').limit(COMMENTS_PAGE_SIZE);
+      if (!reset && commentsLastDoc) q = q.startAfter(commentsLastDoc);
+      const snap = await q.get();
       const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderComments(list);
+      commentsHasMore = snap.docs.length === COMMENTS_PAGE_SIZE;
+      if (snap.docs.length > 0) commentsLastDoc = snap.docs[snap.docs.length - 1];
+      allComments = reset ? list : [...allComments, ...list];
+      renderComments(allComments);
+      if (commentsHasMore) loadMoreEl.style.display = 'block';
     } catch (e) {
       container.innerHTML = '<div class="leaderboard-empty">Could not load comments. Check Firebase config.</div>';
+      const prompt = document.getElementById('comments-prompt');
+      if (prompt) prompt.textContent = 'See something wrong? Leave a comment below. (Local only — add Firebase config for shared comments.)';
     }
   } else {
     const list = getCommentsLocal();
-    renderComments(list);
+    if (reset) allComments = list.slice(0, COMMENTS_PAGE_SIZE);
+    else allComments = list.slice(0, allComments.length + COMMENTS_PAGE_SIZE);
+    renderComments(allComments);
+    loadMoreEl.style.display = allComments.length < list.length ? 'block' : 'none';
     const prompt = document.getElementById('comments-prompt');
     if (prompt) prompt.textContent = 'See something wrong? Leave a comment below — anonymously or with your name. (Local only — add Firebase config for shared comments.)';
   }
+}
+
+async function loadMoreComments() {
+  await loadAndRenderComments(false);
 }
 
 function getCommentsLocal() {
@@ -282,7 +320,8 @@ function entryDateStr(e) {
 async function loadAndRenderLeaderboard() {
   const container = document.getElementById('leaderboard-list');
   const empty = document.getElementById('leaderboard-empty');
-  const today = getDateString();
+  const dateSelect = document.getElementById('leaderboard-date');
+  const selectedDate = (dateSelect && dateSelect.value) ? dateSelect.value : getDateString();
 
   if (db) {
     container.innerHTML = '';
@@ -290,28 +329,69 @@ async function loadAndRenderLeaderboard() {
     empty.textContent = 'Loading...';
     empty.style.display = 'block';
     try {
-      const snap = await db.collection('leaderboard').limit(100).get();
-      const list = snap.docs.map(d => d.data()).filter(e => entryDateStr(e) === today).sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 20);
+      const snap = await db.collection('leaderboard').limit(500).get();
+      const allEntries = snap.docs.map(d => d.data());
+      const dates = [...new Set(allEntries.map(e => entryDateStr(e)).filter(Boolean))].sort().reverse();
+      if (dateSelect) {
+        const today = getDateString();
+        if (dateSelect.options.length === 0 || !dateSelect.querySelector('option[value="' + today + '"]')) {
+          dateSelect.innerHTML = '<option value="' + today + '">Today</option>';
+          dates.filter(d => d !== today).forEach(d => {
+            dateSelect.innerHTML += '<option value="' + d + '">' + formatDateLabel(d) + '</option>';
+          });
+        }
+        if (!dateSelect.value || dateSelect.value === '') dateSelect.value = today;
+      }
+      const list = allEntries.filter(e => entryDateStr(e) === selectedDate).sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 20);
       empty.style.display = 'none';
-      renderLeaderboard(list);
+      renderLeaderboard(list, selectedDate);
     } catch (e) {
       console.error('Leaderboard error:', e);
       empty.textContent = 'Could not load leaderboard. Check Firebase config and indexes.';
       empty.style.display = 'block';
     }
   } else {
-    const list = getLeaderboardLocal();
-    renderLeaderboard(list);
+    const list = getLeaderboardForDate(selectedDate);
+    if (dateSelect && dateSelect.options.length === 0) {
+      const all = getLeaderboardLocalAll();
+      const dates = [...new Set(all.map(e => entryDateStr(e)).filter(Boolean))].sort().reverse();
+      const today = getDateString();
+      dateSelect.innerHTML = '<option value="' + today + '">Today</option>';
+      dates.filter(d => d !== today).forEach(d => {
+        dateSelect.innerHTML += '<option value="' + d + '">' + formatDateLabel(d) + '</option>';
+      });
+      if (!dateSelect.value) dateSelect.value = today;
+    }
+    renderLeaderboard(list, selectedDate);
   }
 }
 
-function getLeaderboardLocal() {
+function formatDateLabel(dateStr) {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const today = new Date();
+  if (dateStr === getDateString()) return 'Today';
+  if (date.getTime() === today.getTime() - 86400000) return 'Yesterday';
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function getLeaderboardLocalAll() {
   try {
     const raw = localStorage.getItem(LEADERBOARD_KEY);
-    const all = raw ? JSON.parse(raw) : [];
-    const today = getDateString();
-    return all.filter(e => entryDateStr(e) === today).sort((a, b) => b.score - a.score);
+    return raw ? JSON.parse(raw) : [];
   } catch { return []; }
+}
+
+function getLeaderboardForDate(dateStr) {
+  const all = getLeaderboardLocalAll();
+  const today = getDateString();
+  const useDate = dateStr || today;
+  return all.filter(e => entryDateStr(e) === useDate).sort((a, b) => b.score - a.score);
+}
+
+function getLeaderboardLocal() {
+  return getLeaderboardForDate(getDateString());
 }
 
 async function getTodayLeaderboard() {
@@ -350,10 +430,11 @@ async function saveToLeaderboard(entry) {
   }
 }
 
-function renderLeaderboard(list) {
+function renderLeaderboard(list, dateStr) {
   const container = document.getElementById('leaderboard-list');
   const empty = document.getElementById('leaderboard-empty');
-  empty.textContent = 'No scores yet today. Complete the quiz and submit your score!';
+  const isToday = !dateStr || dateStr === getDateString();
+  empty.textContent = isToday ? 'No scores yet today. Complete the quiz and submit your score!' : 'No scores for this date.';
   if (!list || list.length === 0) {
     container.innerHTML = '';
     empty.style.display = 'block';

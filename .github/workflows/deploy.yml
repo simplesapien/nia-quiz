@@ -35,7 +35,7 @@ jobs:
       - name: Prepare site
         run: |
           mkdir -p _site
-          cp index.html questions.js firebase-config.js _site/
+          cp index.html questions.js firebase-config.js favicon.png _site/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
