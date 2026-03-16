@@ -48,10 +48,37 @@
   .tag-right { background: #0c2b20; color: #34d399; }
   #quiz-screen, #results-screen { display: none; }
   #quiz-screen.active, #results-screen.active { display: block; }
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; }
+  .tab-btn { background: #0f1623; border: 1px solid #1e2d40; border-radius: 8px; padding: 8px 16px; font-size: 14px; color: #9ca3af; cursor: pointer; font-family: inherit; }
+  .tab-btn:hover { color: #d1d5db; border-color: #3b82f6; }
+  .tab-btn.active { background: #1e2d40; color: #3b82f6; border-color: #3b82f6; }
+  /* Leaderboard */
+  .leaderboard-list { max-height: 400px; overflow-y: auto; }
+  .leaderboard-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #1e2d40; }
+  .leaderboard-row:last-child { border-bottom: none; }
+  .leaderboard-rank { font-weight: 700; color: #4b5563; min-width: 28px; }
+  .leaderboard-name { color: #d1d5db; }
+  .leaderboard-score { color: #3b82f6; font-weight: 600; }
+  .leaderboard-empty { color: #6b7280; padding: 24px; text-align: center; }
+  /* Submit score */
+  .submit-score { margin-top: 24px; padding-top: 24px; border-top: 1px solid #1e2d40; }
+  .submit-score input { background: #0f1623; border: 1px solid #1e2d40; border-radius: 8px; padding: 12px 16px; font-size: 15px; color: #d1d5db; width: 200px; margin-right: 10px; font-family: inherit; }
+  .submit-score input::placeholder { color: #6b7280; }
+  .submit-score .submit-msg { color: #10b981; font-size: 14px; margin-top: 8px; }
+  /* Comments */
+  .comments-section { margin-top: 32px; padding-top: 24px; border-top: 1px solid #1e2d40; }
+  .comments-prompt { color: #9ca3af; font-size: 14px; margin-bottom: 16px; }
 </style>
 </head>
 <body>
 <div class="card">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="quiz">Quiz</button>
+    <button class="tab-btn" data-tab="leaderboard">Leaderboard</button>
+    <button class="tab-btn" data-tab="comments">Comments</button>
+  </div>
+  <div id="tab-quiz" style="display:block;">
   <div id="quiz-screen" class="active">
     <div class="meta">
       <span id="q-counter">Question 1 of 20</span>
@@ -74,15 +101,109 @@
       <div class="score-msg" id="score-msg"></div>
     </div>
     <div id="review-container"></div>
+    <div class="submit-score">
+      <p style="color:#9ca3af;font-size:14px;margin-bottom:10px;">Add your name to the leaderboard?</p>
+      <input type="text" id="leaderboard-name" placeholder="Your name" maxlength="30" />
+      <button class="btn" onclick="submitToLeaderboard()">Submit Score</button>
+      <div id="submit-msg" class="submit-msg" style="display:none;"></div>
+    </div>
     <div style="text-align:center; margin-top:28px;">
       <button class="btn" onclick="restartQuiz()">Retake Quiz</button>
     </div>
+  </div>
+  </div>
+
+  <div id="tab-leaderboard" style="display:none;">
+    <h1 style="margin-bottom:8px;">Leaderboard</h1>
+    <p class="subtitle">Top scores (stored on this device)</p>
+    <div id="leaderboard-list" class="leaderboard-list"></div>
+    <div id="leaderboard-empty" class="leaderboard-empty" style="display:none;">No scores yet. Complete the quiz and submit your score!</div>
+  </div>
+
+  <div id="tab-comments" style="display:none;">
+    <h1 style="margin-bottom:8px;">Feedback</h1>
+    <p class="comments-prompt">See something wrong with a question or answer? Let us know below. (Requires GitHub login; <a href="https://github.com/apps/utterances" target="_blank" rel="noopener" style="color:#3b82f6;">install Utterances</a> on this repo if comments don't load.)</p>
+    <div id="utterances-container"></div>
   </div>
 </div>
 
 <script src="questions.js"></script>
 <script>
 const QUESTIONS_PER_QUIZ = 20;
+const LEADERBOARD_KEY = 'nia-quiz-leaderboard';
+const LEADERBOARD_MAX = 50;
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('[id^="tab-"]').forEach(p => p.style.display = 'none');
+    btn.classList.add('active');
+    document.getElementById('tab-' + tab).style.display = 'block';
+    if (tab === 'leaderboard') renderLeaderboard();
+    if (tab === 'comments' && !window.utterancesLoaded) loadUtterances();
+  });
+});
+
+function getLeaderboard() {
+  try {
+    const raw = localStorage.getItem(LEADERBOARD_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveToLeaderboard(entry) {
+  const list = getLeaderboard();
+  list.push(entry);
+  list.sort((a, b) => b.score - a.score);
+  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(list.slice(0, LEADERBOARD_MAX)));
+}
+
+function renderLeaderboard() {
+  const list = getLeaderboard();
+  const container = document.getElementById('leaderboard-list');
+  const empty = document.getElementById('leaderboard-empty');
+  if (list.length === 0) {
+    container.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  container.innerHTML = list.slice(0, 20).map((e, i) =>
+    `<div class="leaderboard-row"><span class="leaderboard-rank">#${i + 1}</span><span class="leaderboard-name">${escapeHtml(e.name)}</span><span class="leaderboard-score">${e.score}/${e.total}</span></div>`
+  ).join('');
+}
+
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function submitToLeaderboard() {
+  const input = document.getElementById('leaderboard-name');
+  const name = ((input.value || '').trim() || 'Anonymous').slice(0, 30);
+  saveToLeaderboard({ name, score, total: shuffled.length, date: Date.now() });
+  input.value = '';
+  input.disabled = true;
+  const msg = document.getElementById('submit-msg');
+  msg.textContent = '✓ Added to leaderboard!';
+  msg.style.display = 'block';
+  renderLeaderboard();
+  document.querySelector('[data-tab="leaderboard"]').click();
+}
+
+function loadUtterances() {
+  window.utterancesLoaded = true;
+  const s = document.createElement('script');
+  s.src = 'https://utteranc.es/client.js';
+  s.setAttribute('repo', 'simplesapien/nia-quiz');
+  s.setAttribute('issue-term', 'pathname');
+  s.setAttribute('theme', 'github-dark');
+  s.setAttribute('crossorigin', 'anonymous');
+  s.async = true;
+  document.getElementById('utterances-container').appendChild(s);
+}
 const labels = ["A","B","C","D"];
 let current = 0, score = 0, selected = null, confirmed = false, results = [];
 let shuffled = [];
@@ -174,6 +295,9 @@ function handleAction() {
 function showResults() {
   document.getElementById('quiz-screen').classList.remove('active');
   document.getElementById('results-screen').classList.add('active');
+  document.getElementById('leaderboard-name').disabled = false;
+  document.getElementById('leaderboard-name').value = '';
+  document.getElementById('submit-msg').style.display = 'none';
   const total = shuffled.length;
   const pct = Math.round((score / total) * 100);
   const numEl = document.getElementById('score-num');
