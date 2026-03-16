@@ -870,15 +870,15 @@ const BIOMARKER_QUESTIONS = [
     "explanation": "This saturated fat is found in peanuts and canola oil. It can also be made by the body, so it is not an essential part of the diet."
   },
   {
-    "q": "What does Eicosapentaenoic Acid measure or describe?",
+    "q": "What does Eicosapentaenoic Acid (EPA) measure or describe?",
     "options": [
-      "Abundant in fatty fish and fish oils.",
+      "An important omega-3 fat abundant in fatty fish and fish oils.",
       "Tells you the relative amount of omega-3 fats circulating in your blood compared to the amount of omega-6 fats.",
       "Compares the omega-3 fat EPA to the omega-6 fat AA in your blood.",
       "The percentage of omega-3 fats (ALA + EPA + DHA + others) circulating in your blood."
     ],
     "answer": 0,
-    "explanation": "This important omega-3 fat is abundant in fatty fish and fish oils. The body makes only small amounts of EPA from alpha-linoleic acid, so it is important to get some EPA in your diet."
+    "explanation": "Eicosapentaenoic Acid (EPA) is an important omega-3 fat abundant in fatty fish and fish oils. The body makes only small amounts of EPA from alpha-linolenic acid, so it is important to get some EPA in your diet."
   },
   {
     "q": "What does Arachidonic Acid measure or describe?",
@@ -1567,7 +1567,7 @@ const BIOMARKER_QUESTIONS = [
     "options": [
       "Another member of the Klebsiella family that can live in the gut at low levels.",
       "A bacterium that can live in animals like pigs and sometimes enter the human gut.",
-      "Escherichia coli (E.",
+      "A common gut bacterium that lives at low levels in healthy adults and usually causes no issues.",
       "Tiny parasites that can be found in water, soil, and on food."
     ],
     "answer": 2,
@@ -1589,7 +1589,7 @@ const BIOMARKER_QUESTIONS = [
     "options": [
       "A bacterium that can be part of the normal gut community.",
       "Bacteria that may be present in the adult gut and in some foods like meat and poultry.",
-      "A large family of bacteria that includes species like E.",
+      "A large family of bacteria that includes species like E. coli and Klebsiella.",
       "Bacteria that can live in the gut at low levels without causing problems."
     ],
     "answer": 2,
@@ -1661,13 +1661,13 @@ const BIOMARKER_QUESTIONS = [
     "answer": 1,
     "explanation": "The APOE gene provides instructions for making a protein called apolipoprotein E (apoE). This protein helps transport fats, including cholesterol, through the bloodstream and plays an important role in both brain health and cardiovascular health. Different versions (alleles) of the APOE gene are associated with differences in risk for late-onset Alzheimer’s disease and how the body handles cholesterol and other lipids."
   },
-  {
-    "q": "What does VKORC1 *** measure or describe?",
+ {
+    "q": "What does VKORC1 measure or describe?",
     "options": [
-      "Helps control how blood clots form.",
-      "Helps control how blood clots form.",
+      "Helps move certain medications out of the gut and liver.",
+      "Helps the liver process vitamin K.",
       "Helps control how sensitive the body is to warfarin.",
-      "Helps move certain medications out of the gut and liver."
+      "Helps break down many common medications in the liver."
     ],
     "answer": 2,
     "explanation": "VKORC1 helps control how sensitive the body is to warfarin. Genetic variants in this gene are a major reason people need very different warfarin doses. Knowing about these variants can help guide safer starting doses and dose adjustments. Medication(s) analyzed: Warfarin"
@@ -1695,7 +1695,7 @@ const BIOMARKER_QUESTIONS = [
     "explanation": "F5 helps control how blood clots form. Certain genetic variants can raise the risk of blood clots, especially when combined with estrogen-containing hormonal medications. Medication(s) analyzed: Ethinyl estradiol"
   },
   {
-    "q": "What does ‍F2 measure or describe?",
+    "q": "What does F2 measure or describe?",
     "options": [
       "Affects how the body handles many medications for mood, pain, and heart health.",
       "Helps control how sensitive the body is to warfarin.",
@@ -1731,7 +1731,7 @@ const BIOMARKER_QUESTIONS = [
     "q": "What does CYP2C19 measure or describe?",
     "options": [
       "Helps move certain medications out of the gut and liver.",
-      "Helps control how blood clots form.",
+      "Helps control how sensitive the body is to warfarin.",
       "Helps break down many common medications, including antidepressants, heart medications, and stomach acid-reducing drugs.",
       "Helps control how blood clots form."
     ],
