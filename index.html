@@ -66,19 +66,21 @@
   .submit-score input { background: #0f1623; border: 1px solid #1e2d40; border-radius: 8px; padding: 12px 16px; font-size: 15px; color: #d1d5db; width: 200px; margin-right: 10px; font-family: inherit; }
   .submit-score input::placeholder { color: #6b7280; }
   .submit-score .submit-msg { color: #10b981; font-size: 14px; margin-top: 8px; }
-  /* Comments */
-  .comments-section { margin-top: 32px; padding-top: 24px; border-top: 1px solid #1e2d40; }
-  .comments-prompt { color: #9ca3af; font-size: 14px; margin-bottom: 16px; }
+  /* Feedback form */
+  .feedback-form { margin-top: 16px; }
+  .feedback-input, .feedback-textarea { width: 100%; background: #0f1623; border: 1px solid #1e2d40; border-radius: 8px; padding: 12px 16px; font-size: 15px; color: #d1d5db; font-family: inherit; }
+  .feedback-input::placeholder, .feedback-textarea::placeholder { color: #6b7280; }
+  .feedback-textarea { resize: vertical; min-height: 80px; }
 </style>
 </head>
 <body>
 <div class="card">
   <div class="tabs">
-    <button class="tab-btn active" data-tab="quiz">Quiz</button>
-    <button class="tab-btn" data-tab="leaderboard">Leaderboard</button>
-    <button class="tab-btn" data-tab="comments">Comments</button>
+    <button class="tab-btn" data-tab="quiz">Quiz</button>
+    <button class="tab-btn active" data-tab="leaderboard">Leaderboard</button>
+    <button class="tab-btn" data-tab="comments">Feedback</button>
   </div>
-  <div id="tab-quiz" style="display:block;">
+  <div id="tab-quiz" style="display:none;">
   <div id="quiz-screen" class="active">
     <div class="meta">
       <span id="q-counter">Question 1 of 20</span>
@@ -113,7 +115,7 @@
   </div>
   </div>
 
-  <div id="tab-leaderboard" style="display:none;">
+  <div id="tab-leaderboard" style="display:block;">
     <h1 style="margin-bottom:8px;">Leaderboard</h1>
     <p class="subtitle">Top scores (stored on this device)</p>
     <div id="leaderboard-list" class="leaderboard-list"></div>
@@ -122,8 +124,16 @@
 
   <div id="tab-comments" style="display:none;">
     <h1 style="margin-bottom:8px;">Feedback</h1>
-    <p class="comments-prompt">See something wrong with a question or answer? Let us know below. (Requires GitHub login; <a href="https://github.com/apps/utterances" target="_blank" rel="noopener" style="color:#3b82f6;">install Utterances</a> on this repo if comments don't load.)</p>
-    <div id="utterances-container"></div>
+    <p class="comments-prompt">See something wrong with a question or answer? Let us know below — no account needed.</p>
+    <!-- Replace the email below with yours to receive feedback. First submission triggers FormSubmit confirmation. -->
+    <form action="https://formsubmit.co/feedback@niahealth.ca" method="POST" class="feedback-form">
+      <input type="hidden" name="_subject" value="NiaHealth Quiz Feedback" />
+      <input type="hidden" name="_next" value="https://simplesapien.github.io/nia-quiz/#feedback-sent" />
+      <input type="hidden" name="_captcha" value="false" />
+      <input type="text" name="name" placeholder="Your name (optional)" class="feedback-input" style="margin-bottom:10px;" />
+      <textarea name="message" placeholder="Your feedback..." required class="feedback-textarea" rows="4"></textarea>
+      <button type="submit" class="btn" style="margin-top:12px;">Send Feedback</button>
+    </form>
   </div>
 </div>
 
@@ -141,9 +151,9 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.add('active');
     document.getElementById('tab-' + tab).style.display = 'block';
     if (tab === 'leaderboard') renderLeaderboard();
-    if (tab === 'comments' && !window.utterancesLoaded) loadUtterances();
   });
 });
+renderLeaderboard();
 
 function getLeaderboard() {
   try {
@@ -193,17 +203,6 @@ function submitToLeaderboard() {
   document.querySelector('[data-tab="leaderboard"]').click();
 }
 
-function loadUtterances() {
-  window.utterancesLoaded = true;
-  const s = document.createElement('script');
-  s.src = 'https://utteranc.es/client.js';
-  s.setAttribute('repo', 'simplesapien/nia-quiz');
-  s.setAttribute('issue-term', 'pathname');
-  s.setAttribute('theme', 'github-dark');
-  s.setAttribute('crossorigin', 'anonymous');
-  s.async = true;
-  document.getElementById('utterances-container').appendChild(s);
-}
 const labels = ["A","B","C","D"];
 let current = 0, score = 0, selected = null, confirmed = false, results = [];
 let shuffled = [];
