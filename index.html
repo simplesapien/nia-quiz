@@ -25,8 +25,8 @@
   .question-marks.bounce { animation: pts-bounce 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
   @keyframes pts-bounce { 0% { transform: scale(1); } 35% { transform: scale(1.35); } 100% { transform: scale(1); } }
   h2 { color: #1a1a1a; font-size: 15px; line-height: 1.4; margin-bottom: 12px; font-weight: 800; overflow-wrap: break-word; }
-  .opt { cursor: pointer; border: 2px solid #1a1a1a; border-radius: 0; padding: 10px 12px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; background: #fff; transition: all 0.12s; width: 100%; box-sizing: border-box; flex-shrink: 0; box-shadow: 2px 2px 0 #1a1a1a; }
-  .opt:hover { background: #f5f0e8; transform: translate(-1px, -1px); box-shadow: 3px 3px 0 #1a1a1a; }
+  .opt { cursor: pointer; border: 2px solid #1a1a1a; border-radius: 0; padding: 10px 12px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; background: #fff; transition: all 0.12s; width: 100%; box-sizing: border-box; flex-shrink: 0; box-shadow: 1.5px 1.5px 0 #1a1a1a; }
+  .opt:hover { background: #f5f0e8; transform: translate(-1px, -1px); box-shadow: 2.5px 2.5px 0 #1a1a1a; }
   .opt.selected { background: #ffe15a; transform: translate(1px, 1px); box-shadow: 1px 1px 0 #1a1a1a; }
   .opt.correct { border-color: #1a1a1a; background: #b8f5c8; }
   .opt.wrong { border-color: #1a1a1a; background: #ffb3b3; }
@@ -46,22 +46,22 @@
   .actions .btn, .actions .btn-secondary { flex: 1 1 0; min-width: 0; width: 0; padding: 8px 16px; font-size: 13px; }
   .btn-arrow { display: inline-block; font-size: 1.15em; margin: 0 0.3em; }
   @media (max-width: 640px) { .btn-arrow { font-size: 1.5em; } }
-  .btn { background: #1a1a1a; color: #fff; border: 2px solid #1a1a1a; border-radius: 0; padding: 10px 20px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; box-shadow: 4px 4px 0 #1a1a1a; transition: all 0.1s; }
-  .btn:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 #1a1a1a; }
+  .btn { background: #1a1a1a; color: #fff; border: 2px solid #1a1a1a; border-radius: 0; padding: 10px 20px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; box-shadow: 3px 3px 0 #1a1a1a; transition: all 0.1s; }
+  .btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #1a1a1a; }
   .btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 #1a1a1a; }
-  .btn:disabled { background: #d6d3d1; color: #a8a29e; border-color: #a8a29e; box-shadow: 2px 2px 0 #a8a29e; cursor: not-allowed; transform: none; }
-  .btn-secondary { background: #fff; color: #1a1a1a; border: 2px solid #1a1a1a; box-shadow: 4px 4px 0 #1a1a1a; }
-  .btn-secondary:hover { background: #f5f0e8; transform: translate(-1px, -1px); box-shadow: 5px 5px 0 #1a1a1a; }
+  .btn:disabled { background: #d6d3d1; color: #a8a29e; border-color: #a8a29e; box-shadow: 1.5px 1.5px 0 #a8a29e; cursor: not-allowed; transform: none; }
+  .btn-secondary { background: #fff; color: #1a1a1a; border: 2px solid #1a1a1a; box-shadow: 3px 3px 0 #1a1a1a; }
+  .btn-secondary:hover { background: #f5f0e8; transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #1a1a1a; }
   .btn-secondary:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 #1a1a1a; }
-  .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: 2px 2px 0 #a8a29e; transform: none; }
-  .btn-accent { background: #ffe15a; color: #1a1a1a; border: 2px solid #1a1a1a; box-shadow: 4px 4px 0 #1a1a1a; }
-  .btn-accent:hover { background: #ffec8b; transform: translate(-1px, -1px); box-shadow: 5px 5px 0 #1a1a1a; }
+  .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: 1.5px 1.5px 0 #a8a29e; transform: none; }
+  .btn-accent { background: #ffe15a; color: #1a1a1a; border: 2px solid #1a1a1a; box-shadow: 3px 3px 0 #1a1a1a; }
+  .btn-accent:hover { background: #ffec8b; transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #1a1a1a; }
   .btn-accent:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 #1a1a1a; }
-  .btn-accent:disabled { background: #d6d3d1; color: #a8a29e; border-color: #a8a29e; box-shadow: 2px 2px 0 #a8a29e; cursor: not-allowed; transform: none; }
+  .btn-accent:disabled { background: #d6d3d1; color: #a8a29e; border-color: #a8a29e; box-shadow: 1.5px 1.5px 0 #a8a29e; cursor: not-allowed; transform: none; }
   /* Results */
   h1 { color: #1a1a1a; font-size: 24px; font-weight: 800; margin-bottom: 6px; }
   .subtitle { color: #64748b; margin-bottom: 16px; font-size: 14px; }
-  .score-box { background: #fff; border: 2px solid #1a1a1a; border-radius: 0; padding: 20px; text-align: center; margin-bottom: 20px; position: relative; box-shadow: 4px 4px 0 #1a1a1a; }
+  .score-box { background: #fff; border: 2px solid #1a1a1a; border-radius: 0; padding: 20px; text-align: center; margin-bottom: 20px; position: relative; box-shadow: 3px 3px 0 #1a1a1a; }
   .score-gauge-wrap { position: relative; width: 160px; height: 90px; margin: 0 auto 12px; }
   .score-gauge-wrap svg { width: 100%; height: 100%; }
   .score-gauge-bg { fill: none; stroke: #e8e4df; stroke-width: 10; stroke-linecap: butt; }
@@ -95,10 +95,14 @@
   /* Page header */
   .page-header { display: none; }
   /* Tabs */
-  .tabs { flex-shrink: 0; display: flex; gap: 0; margin-bottom: 12px; border-bottom: 3px solid #1a1a1a; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: #1a1a1a transparent; }
+  .tabs-wrap { position: relative; flex-shrink: 0; margin-bottom: 12px; }
+  .tabs { display: flex; gap: 0; border-bottom: 3px solid #1a1a1a; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: #1a1a1a transparent; }
   .tabs::-webkit-scrollbar { height: 4px; }
   .tabs::-webkit-scrollbar-track { background: transparent; }
   .tabs::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 0; }
+  @media (max-width: 640px) {
+    .tabs-wrap::after { content: ''; position: absolute; top: 0; right: 0; bottom: 4px; width: 24px; background: linear-gradient(to left, #fff 40%, transparent); pointer-events: none; }
+  }
   .tab-btn { flex-shrink: 0; background: none; border: none; border-bottom: 3px solid transparent; border-radius: 0; padding: 10px 20px; font-size: 14px; font-weight: 700; color: #a8a29e; cursor: pointer; font-family: inherit; transition: all 0.15s; margin-bottom: -3px; text-transform: uppercase; letter-spacing: 0.04em; }
   .tab-btn:hover { color: #1a1a1a; }
   .tab-btn.active { color: #1a1a1a; border-bottom-color: #ff6b35; background: #ffe15a; }
@@ -111,7 +115,7 @@
   .leaderboard-row:last-child { border-bottom: none; }
   .leaderboard-rank { font-weight: 700; color: #1a1a1a; min-width: 28px; }
   .leaderboard-name { color: #1a1a1a; font-weight: 600; }
-  .leaderboard-score { color: #1a1a1a; font-weight: 700; background: #ffe15a; border: 1.5px solid #1a1a1a; padding: 1px 8px; box-shadow: 2px 2px 0 #1a1a1a; }
+  .leaderboard-score { color: #1a1a1a; font-weight: 700; background: #ffe15a; border: 1.5px solid #1a1a1a; padding: 1px 8px; box-shadow: 1.5px 1.5px 0 #1a1a1a; }
   .leaderboard-empty { color: #1a1a1a; padding: 24px; text-align: center; font-weight: 600; }
   /* Submit score */
   .submit-score { margin-top: 16px; padding-top: 16px; border-top: 3px solid #1a1a1a; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
@@ -124,7 +128,7 @@
   #tab-comments { display: flex; flex-direction: column; }
   .comments-header { color: #1a1a1a; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
   .comments-prompt { color: #555; font-size: 12px; margin-bottom: 8px; font-weight: 500; }
-  .feedback-form { margin-top: 0; margin-bottom: 10px; }
+  .feedback-form { margin-top: 16px; margin-bottom: 0; padding-top: 12px; border-top: 2px solid #1a1a1a; }
   .feedback-input, .feedback-textarea { width: 100%; background: #fff; border: 2px solid #1a1a1a; border-radius: 0; padding: 8px 12px; font-size: 14px; color: #1a1a1a; font-family: inherit; font-weight: 500; }
   .feedback-input::placeholder, .feedback-textarea::placeholder { color: #94a3b8; }
   .feedback-textarea { resize: vertical; min-height: 40px; max-height: 80px; }
@@ -135,7 +139,7 @@
   .comments-list::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   .load-more-comments { margin-top: 12px; text-align: center; }
   .load-more-comments .btn { padding: 10px 24px; font-size: 14px; }
-  .comment-item { border: 2px solid #1a1a1a; border-radius: 0; padding: 14px 18px; margin-bottom: 12px; background: #fff; box-shadow: 3px 3px 0 #1a1a1a; }
+  .comment-item { border: 2px solid #1a1a1a; border-radius: 0; padding: 14px 18px; margin-bottom: 12px; background: #fff; box-shadow: 2px 2px 0 #1a1a1a; }
   .comment-author { color: #1a1a1a; font-size: 13px; font-weight: 700; margin-bottom: 6px; }
   .comment-author.anonymous { color: #555; font-style: italic; }
   .comment-body { color: #1a1a1a; font-size: 14px; line-height: 1.5; }
@@ -155,11 +159,13 @@
   <div class="page-header">
     <h1 class="page-title">Today's Quiz</h1>
   </div>
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="quiz">Quiz</button>
-    <button class="tab-btn" data-tab="practice">Practice</button>
-    <button class="tab-btn" data-tab="leaderboard">Leaderboard</button>
-    <button class="tab-btn" data-tab="comments">Comments</button>
+  <div class="tabs-wrap">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="quiz">Daily Quiz</button>
+      <button class="tab-btn" data-tab="practice">Practice</button>
+      <button class="tab-btn" data-tab="leaderboard">Leaderboard</button>
+      <button class="tab-btn" data-tab="comments">Comments</button>
+    </div>
   </div>
   <div class="tab-panels">
   <div id="tab-quiz" style="display:flex;">
@@ -240,15 +246,15 @@
   <div id="tab-comments" style="display:none;">
     <div class="comments-header">Comments</div>
     <p class="comments-prompt" id="comments-prompt">Let me know if there are any factual errors.</p>
+    <div id="comments-list" class="comments-list"></div>
+    <div id="load-more-comments" class="load-more-comments" style="display:none;">
+      <button class="btn btn-secondary" onclick="loadMoreComments()">Load more comments</button>
+    </div>
     <form id="comment-form" class="feedback-form">
       <input type="text" id="comment-name" placeholder="Your name (optional — leave blank for anonymous)" class="feedback-input" style="margin-bottom:10px;" maxlength="50" />
       <textarea id="comment-text" placeholder="Your comment..." required class="feedback-textarea" rows="2"></textarea>
       <button type="submit" class="btn btn-accent" style="margin-top:8px;padding:8px 16px;font-size:13px;">Post Comment</button>
     </form>
-    <div id="comments-list" class="comments-list"></div>
-    <div id="load-more-comments" class="load-more-comments" style="display:none;">
-      <button class="btn btn-secondary" onclick="loadMoreComments()">Load more comments</button>
-    </div>
   </div>
   </div>
 </div>
