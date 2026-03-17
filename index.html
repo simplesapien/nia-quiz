@@ -40,7 +40,7 @@
   .opt.correct .badge { background: #22c55e; color: #fff; transform: scale(1.1); }
   .opt.wrong .badge { background: #ef4444; color: #fff; transform: scale(1.1); }
   .opt-text { color: #334155; font-size: 14px; flex: 1; min-width: 0; line-height: 1.4; overflow-wrap: break-word; }
-  .feedback { border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; font-size: 13px; }
+  .feedback { border-radius: 8px; padding: 10px 12px; margin-top: 12px; margin-bottom: 10px; font-size: 13px; }
   .feedback.good { background: #f0fdf4; border: 1px solid #22c55e; color: #15803d; }
   .feedback.bad { background: #fef2f2; border: 1px solid #ef4444; color: #b91c1c; }
   .actions { display: flex; justify-content: space-between; align-items: stretch; gap: 12px; width: 100%; box-sizing: border-box; }
@@ -125,6 +125,14 @@
   .comment-author.anonymous { color: #64748b; font-style: italic; }
   .comment-body { color: #334155; font-size: 14px; line-height: 1.5; }
   .comment-date { color: #64748b; font-size: 12px; margin-top: 8px; }
+  /* Practice */
+  .practice-list { flex: 1; overflow-y: auto; }
+  .practice-item { background: #faf9f7; border: 1px solid #e7e0d8; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+  .practice-item .practice-q { color: #1e293b; font-size: 15px; font-weight: 700; margin-bottom: 12px; line-height: 1.4; }
+  .practice-item .practice-opts { margin-bottom: 12px; }
+  .practice-item .practice-opts .opt { margin-bottom: 6px; }
+  .practice-item .practice-opts .opt:last-child { margin-bottom: 0; }
+  .practice-item .practice-explain { font-size: 13px; color: #64748b; line-height: 1.5; padding: 10px 12px; background: #f5f5f4; border-radius: 8px; border: 1px solid #e7e0d8; }
 </style>
 </head>
 <body>
@@ -134,6 +142,7 @@
   </div>
   <div class="tabs">
     <button class="tab-btn active" data-tab="quiz">Quiz</button>
+    <button class="tab-btn" data-tab="practice">Practice</button>
     <button class="tab-btn" data-tab="leaderboard">Leaderboard</button>
     <button class="tab-btn" data-tab="comments">Comments</button>
   </div>
@@ -178,6 +187,12 @@
   </div>
   </div>
 
+  <div id="tab-practice" style="display:none;">
+    <h1 style="margin-bottom:8px;">Practice</h1>
+    <p class="subtitle">All questions — study at your own pace</p>
+    <div id="practice-list" class="practice-list"></div>
+  </div>
+
   <div id="tab-leaderboard" style="display:none;">
     <h1 style="margin-bottom:8px;">Leaderboard</h1>
     <p class="subtitle">Top scores — resets daily (shared)</p>
@@ -191,7 +206,7 @@
 
   <div id="tab-comments" style="display:none;">
     <div class="comments-header">Comments</div>
-    <p class="comments-prompt" id="comments-prompt">Let me know if there are any factual errors — anonymously or with your name.</p>
+    <p class="comments-prompt" id="comments-prompt">Let me know if there are any factual errors.</p>
     <form id="comment-form" class="feedback-form">
       <input type="text" id="comment-name" placeholder="Your name (optional — leave blank for anonymous)" class="feedback-input" style="margin-bottom:10px;" maxlength="50" />
       <textarea id="comment-text" placeholder="Your comment..." required class="feedback-textarea" rows="2"></textarea>
@@ -238,8 +253,28 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     tabEl.style.display = 'flex';
     if (tab === 'leaderboard') loadAndRenderLeaderboard();
     if (tab === 'comments') loadAndRenderComments();
+    if (tab === 'practice') loadAndRenderPractice();
   });
 });
+
+function loadAndRenderPractice() {
+  const container = document.getElementById('practice-list');
+  const pool = typeof BIOMARKER_QUESTIONS !== 'undefined' ? BIOMARKER_QUESTIONS : [];
+  if (!pool.length) {
+    container.innerHTML = '<div class="leaderboard-empty">No questions available.</div>';
+    return;
+  }
+  container.innerHTML = pool.map((q, i) => {
+    const optsHtml = q.options.map((opt, j) => {
+      const isCorrect = j === q.answer;
+      const cls = isCorrect ? 'opt correct' : 'opt';
+      const badgeText = isCorrect ? '✓' : labels[j];
+      return `<div class="${cls}"><div class="badge ${badgeClasses[j]}">${badgeText}</div><span class="opt-text">${escapeHtml(opt)}</span></div>`;
+    }).join('');
+    const explainHtml = q.explanation ? `<div class="practice-explain">${escapeHtml(q.explanation)}</div>` : '';
+    return `<div class="practice-item"><div class="practice-q">Q${i + 1}. ${escapeHtml(q.q)}</div><div class="practice-opts">${optsHtml}</div>${explainHtml}</div>`;
+  }).join('');
+}
 
 function formatCommentDate(ts) {
   const d = new Date(typeof ts === 'object' && ts?.seconds ? ts.seconds * 1000 : ts);
@@ -278,7 +313,7 @@ async function loadAndRenderComments(reset = true) {
     renderComments(allComments);
     loadMoreEl.style.display = allComments.length < list.length ? 'block' : 'none';
     const prompt = document.getElementById('comments-prompt');
-    if (prompt) prompt.textContent = 'Let me know if there are any factual errors — anonymously or with your name. (Local only — add Firebase config for shared comments.)';
+    if (prompt) prompt.textContent = 'Let me know if there are any factual errors. (Local only — add Firebase config for shared comments.)';
   }
 }
 
