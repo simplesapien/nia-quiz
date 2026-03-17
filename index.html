@@ -54,10 +54,15 @@
   /* Results */
   h1 { color: #1e293b; font-size: 24px; font-weight: 700; margin-bottom: 6px; }
   .subtitle { color: #64748b; margin-bottom: 16px; font-size: 14px; }
-  .score-box { background: #faf9f7; border: 1px solid #e7e0d8; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; }
+  .score-box { background: #faf9f7; border: 1px solid #e7e0d8; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; position: relative; }
+  .score-gauge-wrap { position: relative; width: 160px; height: 90px; margin: 0 auto 12px; }
+  .score-gauge-wrap svg { width: 100%; height: 100%; }
+  .score-gauge-bg { fill: none; stroke: #e7e0d8; stroke-width: 10; stroke-linecap: round; }
+  .score-gauge-fill { fill: none; stroke-width: 10; stroke-linecap: round; stroke-dasharray: 125.6; transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
   .score-num { font-size: 48px; font-weight: 700; line-height: 1; }
   .score-total { font-size: 28px; color: #64748b; }
   .score-msg { color: #64748b; margin-top: 8px; font-size: 15px; }
+  .submit-score .retake-wrap .btn { padding: 14px 32px; font-size: 16px; }
   .review-title { color: #1e293b; font-size: 18px; font-weight: 700; margin-bottom: 16px; }
   .review-item { border: 1px solid #e7e0d8; border-radius: 10px; padding: 12px; margin-bottom: 10px; background: #faf9f7; }
   .review-q { color: #334155; font-size: 14px; font-weight: 600; margin-bottom: 10px; }
@@ -83,8 +88,11 @@
   /* Page header */
   .page-header { display: none; }
   /* Tabs */
-  .tabs { flex-shrink: 0; display: flex; gap: 0; margin-bottom: 12px; border-bottom: 2px solid #e7e0d8; }
-  .tab-btn { background: none; border: none; border-bottom: 3px solid transparent; border-radius: 0; padding: 10px 20px; font-size: 14px; font-weight: 600; color: #a8a29e; cursor: pointer; font-family: inherit; transition: all 0.2s; margin-bottom: -2px; }
+  .tabs { flex-shrink: 0; display: flex; gap: 0; margin-bottom: 12px; border-bottom: 2px solid #e7e0d8; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: #d6d3d1 transparent; }
+  .tabs::-webkit-scrollbar { height: 4px; }
+  .tabs::-webkit-scrollbar-track { background: transparent; }
+  .tabs::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 2px; }
+  .tab-btn { flex-shrink: 0; background: none; border: none; border-bottom: 3px solid transparent; border-radius: 0; padding: 10px 20px; font-size: 14px; font-weight: 600; color: #a8a29e; cursor: pointer; font-family: inherit; transition: all 0.2s; margin-bottom: -2px; }
   .tab-btn:hover { color: #57534e; }
   .tab-btn.active { color: #78716c; border-bottom-color: #78716c; }
   /* Leaderboard */
@@ -126,13 +134,13 @@
   .comment-body { color: #334155; font-size: 14px; line-height: 1.5; }
   .comment-date { color: #64748b; font-size: 12px; margin-top: 8px; }
   /* Practice */
-  .practice-list { flex: 1; overflow-y: auto; }
-  .practice-item { background: #faf9f7; border: 1px solid #e7e0d8; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
-  .practice-item .practice-q { color: #1e293b; font-size: 15px; font-weight: 700; margin-bottom: 12px; line-height: 1.4; }
-  .practice-item .practice-opts { margin-bottom: 12px; }
-  .practice-item .practice-opts .opt { margin-bottom: 6px; }
-  .practice-item .practice-opts .opt:last-child { margin-bottom: 0; }
-  .practice-item .practice-explain { font-size: 13px; color: #64748b; line-height: 1.5; padding: 10px 12px; background: #f5f5f4; border-radius: 8px; border: 1px solid #e7e0d8; }
+  #tab-practice { display: flex; flex-direction: column; }
+  #practice-screen .question-card { flex: 1; min-height: 0; display: flex; flex-direction: column; margin-bottom: 8px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #d6d3d1 transparent; }
+  #practice-screen .question-card::-webkit-scrollbar { width: 4px; }
+  #practice-screen .question-card::-webkit-scrollbar-track { background: transparent; }
+  #practice-screen .question-card::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 2px; }
+  #practice-screen #practice-options-container { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; }
+  #practice-screen #practice-options-container .opt { margin-bottom: 0; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -169,6 +177,12 @@
     <h1>Quiz Complete</h1>
     <p class="subtitle">NiaHealth Biomarkers & Plans</p>
     <div class="score-box">
+      <div class="score-gauge-wrap">
+        <svg viewBox="0 0 100 50">
+          <path class="score-gauge-bg" d="M 10 45 A 40 40 0 0 1 90 45" />
+          <path id="score-gauge-fill" class="score-gauge-fill" d="M 10 45 A 40 40 0 0 1 90 45" stroke-dashoffset="125.6" />
+        </svg>
+      </div>
       <div class="score-num" id="score-num"></div>
       <div class="score-msg" id="score-msg"></div>
     </div>
@@ -188,9 +202,21 @@
   </div>
 
   <div id="tab-practice" style="display:none;">
-    <h1 style="margin-bottom:8px;">Practice</h1>
-    <p class="subtitle">All questions — study at your own pace</p>
-    <div id="practice-list" class="practice-list"></div>
+    <div id="practice-screen" style="display:flex;flex-direction:column;flex:1;min-height:0;width:100%;">
+      <div class="progress-bar"><div class="progress-fill" id="practice-progress-fill" style="width:0%"></div></div>
+      <div class="question-card">
+        <div class="question-header">
+          <span class="question-num" id="practice-question-num">Q1</span>
+        </div>
+        <h2 id="practice-question-text"></h2>
+        <div id="practice-options-container"></div>
+        <div id="practice-feedback" class="feedback" style="display:none"></div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-secondary" id="practice-prev-btn" onclick="practicePrevious()" style="display:none;">&larr; Previous</button>
+        <button class="btn" id="practice-action-btn" onclick="handlePracticeAction()">Confirm Answer</button>
+      </div>
+    </div>
   </div>
 
   <div id="tab-leaderboard" style="display:none;">
@@ -253,27 +279,134 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     tabEl.style.display = 'flex';
     if (tab === 'leaderboard') loadAndRenderLeaderboard();
     if (tab === 'comments') loadAndRenderComments();
-    if (tab === 'practice') loadAndRenderPractice();
+    if (tab === 'practice') startPractice();
   });
 });
 
-function loadAndRenderPractice() {
-  const container = document.getElementById('practice-list');
+let practiceShuffled = [];
+let practiceCurrent = 0;
+let practiceSelected = null;
+let practiceConfirmed = false;
+
+function startPractice() {
   const pool = typeof BIOMARKER_QUESTIONS !== 'undefined' ? BIOMARKER_QUESTIONS : [];
-  if (!pool.length) {
-    container.innerHTML = '<div class="leaderboard-empty">No questions available.</div>';
+  practiceShuffled = shuffleWithSeed(pool, Date.now().toString());
+  practiceCurrent = 0;
+  practiceSelected = null;
+  practiceConfirmed = false;
+  renderPracticeQuestion();
+}
+
+function renderPracticeQuestion() {
+  if (!practiceShuffled.length) {
+    document.getElementById('practice-question-num').textContent = '';
+    document.getElementById('practice-question-text').textContent = 'No questions available.';
+    document.getElementById('practice-options-container').innerHTML = '';
+    document.getElementById('practice-feedback').style.display = 'none';
+    document.getElementById('practice-prev-btn').style.display = 'none';
+    document.getElementById('practice-action-btn').style.display = 'none';
     return;
   }
-  container.innerHTML = pool.map((q, i) => {
-    const optsHtml = q.options.map((opt, j) => {
-      const isCorrect = j === q.answer;
-      const cls = isCorrect ? 'opt correct' : 'opt';
-      const badgeText = isCorrect ? '✓' : labels[j];
-      return `<div class="${cls}"><div class="badge ${badgeClasses[j]}">${badgeText}</div><span class="opt-text">${escapeHtml(opt)}</span></div>`;
-    }).join('');
-    const explainHtml = q.explanation ? `<div class="practice-explain">${escapeHtml(q.explanation)}</div>` : '';
-    return `<div class="practice-item"><div class="practice-q">Q${i + 1}. ${escapeHtml(q.q)}</div><div class="practice-opts">${optsHtml}</div>${explainHtml}</div>`;
-  }).join('');
+  const q = practiceShuffled[practiceCurrent];
+  document.getElementById('practice-prev-btn').style.display = practiceCurrent > 0 ? 'inline-block' : 'none';
+  document.getElementById('practice-action-btn').style.display = '';
+  document.getElementById('practice-progress-fill').style.width = `${(practiceCurrent / practiceShuffled.length) * 100}%`;
+  document.getElementById('practice-question-num').textContent = `Q${practiceCurrent + 1} of ${practiceShuffled.length}`;
+  document.getElementById('practice-question-text').textContent = q.q;
+  document.getElementById('practice-feedback').style.display = 'none';
+  document.getElementById('practice-prev-btn').style.display = practiceCurrent > 0 ? 'inline-block' : 'none';
+
+  if (practiceConfirmed) {
+    document.getElementById('practice-action-btn').textContent = practiceCurrent + 1 >= practiceShuffled.length ? 'Next question' : 'Next →';
+    document.getElementById('practice-action-btn').disabled = false;
+    const container = document.getElementById('practice-options-container');
+    container.innerHTML = '';
+    q.options.forEach((opt, i) => {
+      const div = document.createElement('div');
+      div.className = 'opt';
+      if (i === q.answer) div.classList.add('correct');
+      else if (i === practiceSelected) div.classList.add('wrong');
+      const badgeText = i === q.answer ? '✓' : (i === practiceSelected ? '✗' : labels[i]);
+      div.innerHTML = `<div class="badge ${badgeClasses[i]}">${badgeText}</div><span class="opt-text">${opt}</span>`;
+      div.id = `practice-opt-${i}`;
+      container.appendChild(div);
+    });
+    const fb = document.getElementById('practice-feedback');
+    fb.style.display = 'block';
+    const correct = practiceSelected === q.answer;
+    const explain = q.explanation ? `<div style="margin-top:10px;font-size:13px;opacity:0.9;">${q.explanation}</div>` : '';
+    if (correct) {
+      fb.className = 'feedback good';
+      fb.innerHTML = '✓ Correct!' + explain;
+    } else {
+      fb.className = 'feedback bad';
+      fb.innerHTML = `✗ Correct answer: ${q.options[q.answer]}` + explain;
+    }
+  } else {
+    document.getElementById('practice-action-btn').textContent = 'Confirm Answer';
+    document.getElementById('practice-action-btn').disabled = true;
+    const container = document.getElementById('practice-options-container');
+    container.innerHTML = '';
+    q.options.forEach((opt, i) => {
+      const div = document.createElement('div');
+      div.className = 'opt';
+      div.innerHTML = `<div class="badge ${badgeClasses[i]}">${labels[i]}</div><span class="opt-text">${opt}</span>`;
+      div.onclick = () => practiceSelectOption(i);
+      div.id = `practice-opt-${i}`;
+      container.appendChild(div);
+    });
+  }
+}
+
+function practiceSelectOption(i) {
+  if (practiceConfirmed) return;
+  practiceSelected = i;
+  document.querySelectorAll('#practice-options-container .opt').forEach((el, idx) => {
+    el.classList.toggle('selected', idx === i);
+    const badge = el.querySelector('.badge');
+    badge.textContent = labels[idx];
+    badge.className = 'badge ' + badgeClasses[idx];
+  });
+  document.getElementById('practice-action-btn').disabled = false;
+}
+
+function practicePrevious() {
+  if (practiceCurrent <= 0) return;
+  practiceCurrent--;
+  practiceSelected = null;
+  practiceConfirmed = false;
+  renderPracticeQuestion();
+}
+
+function handlePracticeAction() {
+  if (!practiceConfirmed) {
+    practiceConfirmed = true;
+    const q = practiceShuffled[practiceCurrent];
+    practiceSelected = practiceSelected ?? -1;
+    q.options.forEach((_, i) => {
+      const el = document.getElementById(`practice-opt-${i}`);
+      const badge = el.querySelector('.badge');
+      if (i === q.answer) { el.classList.add('correct'); badge.textContent = '✓'; }
+      else if (i === practiceSelected) { el.classList.add('wrong'); badge.textContent = '✗'; }
+    });
+    const fb = document.getElementById('practice-feedback');
+    fb.style.display = 'block';
+    const correct = practiceSelected === q.answer;
+    const explain = q.explanation ? `<div style="margin-top:10px;font-size:13px;opacity:0.9;">${q.explanation}</div>` : '';
+    if (correct) {
+      fb.className = 'feedback good';
+      fb.innerHTML = '✓ Correct!' + explain;
+    } else {
+      fb.className = 'feedback bad';
+      fb.innerHTML = `✗ Correct answer: ${q.options[q.answer]}` + explain;
+    }
+    document.getElementById('practice-action-btn').textContent = practiceCurrent + 1 >= practiceShuffled.length ? 'Next question' : 'Next →';
+  } else {
+    practiceCurrent = (practiceCurrent + 1) % practiceShuffled.length;
+    practiceSelected = null;
+    practiceConfirmed = false;
+    renderPracticeQuestion();
+  }
 }
 
 function formatCommentDate(ts) {
@@ -700,6 +833,12 @@ async function showResults() {
   const numEl = document.getElementById('score-num');
   numEl.innerHTML = `${score}<span class="score-total">/${total}</span>`;
   numEl.style.color = pct >= 80 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#ef4444';
+  const gaugeFill = document.getElementById('score-gauge-fill');
+  if (gaugeFill) {
+    const arcLen = 125.6;
+    gaugeFill.style.strokeDashoffset = arcLen * (1 - pct / 100);
+    gaugeFill.style.stroke = pct >= 80 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#ef4444';
+  }
 
   const leaderboard = await getTodayLeaderboard();
   const topEntry = leaderboard[0];
