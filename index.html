@@ -44,6 +44,8 @@
   .feedback.bad { background: #ffb3b3; color: #1a1a1a; }
   .actions { display: flex; justify-content: space-between; align-items: stretch; gap: 12px; width: 100%; box-sizing: border-box; padding: 2px 4px 6px 4px; }
   .actions .btn, .actions .btn-secondary { flex: 1 1 0; min-width: 0; width: 0; padding: 8px 16px; font-size: 13px; }
+  .btn-arrow { display: inline-block; font-size: 1.15em; margin: 0 0.3em; }
+  @media (max-width: 640px) { .btn-arrow { font-size: 1.5em; } }
   .btn { background: #1a1a1a; color: #fff; border: 2px solid #1a1a1a; border-radius: 0; padding: 10px 20px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; box-shadow: 4px 4px 0 #1a1a1a; transition: all 0.1s; }
   .btn:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 #1a1a1a; }
   .btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 #1a1a1a; }
@@ -173,7 +175,7 @@
       <div id="feedback" style="display:none"></div>
     </div>
     <div class="actions">
-      <button class="btn btn-secondary" id="prev-btn" onclick="goPrevious()" style="display:none;">&larr; Previous</button>
+      <button class="btn btn-secondary" id="prev-btn" onclick="goPrevious()" style="display:none;"><span class="btn-arrow">←</span> Previous</button>
       <button class="btn btn-accent" id="action-btn" onclick="handleAction()">Confirm Answer</button>
     </div>
   </div>
@@ -218,7 +220,7 @@
         <div id="practice-feedback" class="feedback" style="display:none"></div>
       </div>
       <div class="actions">
-        <button class="btn btn-secondary" id="practice-prev-btn" onclick="practicePrevious()" style="display:none;">&larr; Previous</button>
+        <button class="btn btn-secondary" id="practice-prev-btn" onclick="practicePrevious()" style="display:none;"><span class="btn-arrow">←</span> Previous</button>
         <button class="btn btn-accent" id="practice-action-btn" onclick="handlePracticeAction()">Confirm Answer</button>
       </div>
     </div>
@@ -322,7 +324,7 @@ function renderPracticeQuestion() {
   document.getElementById('practice-prev-btn').style.display = practiceCurrent > 0 ? 'inline-block' : 'none';
 
   if (practiceConfirmed) {
-    document.getElementById('practice-action-btn').textContent = practiceCurrent + 1 >= practiceShuffled.length ? 'Next question' : 'Next →';
+    document.getElementById('practice-action-btn').innerHTML = practiceCurrent + 1 >= practiceShuffled.length ? 'Next question' : 'Next <span class="btn-arrow">→</span>';
     document.getElementById('practice-action-btn').disabled = false;
     const container = document.getElementById('practice-options-container');
     container.innerHTML = '';
@@ -405,7 +407,7 @@ function handlePracticeAction() {
       fb.className = 'feedback bad';
       fb.innerHTML = `✗ Correct answer: ${q.options[q.answer]}` + explain;
     }
-    document.getElementById('practice-action-btn').textContent = practiceCurrent + 1 >= practiceShuffled.length ? 'Next question' : 'Next →';
+    document.getElementById('practice-action-btn').innerHTML = practiceCurrent + 1 >= practiceShuffled.length ? 'Next question' : 'Next <span class="btn-arrow">→</span>';
   } else {
     practiceCurrent = (practiceCurrent + 1) % practiceShuffled.length;
     practiceSelected = null;
@@ -724,7 +726,7 @@ function renderQuestion() {
   if (prevResult) {
     confirmed = true;
     selected = prevResult.chosen;
-    document.getElementById('action-btn').textContent = current + 1 >= shuffled.length ? 'See Results' : 'Next →';
+    document.getElementById('action-btn').innerHTML = current + 1 >= shuffled.length ? 'See Results' : 'Next <span class="btn-arrow">→</span>';
     document.getElementById('action-btn').disabled = false;
     const container = document.getElementById('options-container');
     container.innerHTML = '';
@@ -817,7 +819,7 @@ async function handleAction() {
       void marksEl.offsetWidth;
       marksEl.classList.add('bounce');
     }
-    document.getElementById('action-btn').textContent = current+1 >= shuffled.length ? 'See Results' : 'Next →';
+    document.getElementById('action-btn').innerHTML = current+1 >= shuffled.length ? 'See Results' : 'Next <span class="btn-arrow">→</span>';
   } else {
     if (current+1 >= shuffled.length) { await showResults(); }
     else {
